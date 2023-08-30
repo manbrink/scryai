@@ -8,7 +8,7 @@ with open('data.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 # Assume df_filtered is already created and saved
-df_filtered = pd.read_csv('processed_data.csv')
+df_filtered = pd.read_csv('processed_data_with_names.csv')
 
 # Extract feature matrix and id_index
 X = df_filtered.drop('id', axis=1).to_numpy()
@@ -32,7 +32,7 @@ def find_nearest_neighbors(record_id, id_index, knn_model, X):
     return neighbors
 
 # Query example
-record_id = '0000579f-7b35-4ed3-b44c-db2a538066fe'  # Replace with an actual id from your data
+record_id = '22cd80dd-1c57-423c-81e2-9a956901565f'  # Replace with an actual id from your data
 nearest_neighbor_ids = find_nearest_neighbors(record_id, id_index, knn, X)
 
 # Retrieve names for the nearest neighbor ids
