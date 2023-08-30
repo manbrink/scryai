@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import KNeighborsClassifier
+from joblib import dump, load
 
 # Load JSON data
 with open('data.json', 'r', encoding='utf-8') as f:
@@ -55,17 +56,17 @@ for i, record in enumerate(unique_data):
 
 df_filtered = pd.DataFrame(data_dict)
 
-vectorizer = CountVectorizer(max_features=1000)
+vectorizer = CountVectorizer(max_features=1500)
 name_matrix = vectorizer.fit_transform(names)
 name_array = name_matrix.toarray()
 
 # Vectorize oracle_text
-oracle_vectorizer = CountVectorizer(max_features=1000)
+oracle_vectorizer = CountVectorizer(max_features=1500)
 oracle_matrix = oracle_vectorizer.fit_transform(oracle_texts)
 oracle_array = oracle_matrix.toarray()
 
 # Apply CountVectorizer to type_lines
-type_vectorizer = CountVectorizer(max_features=1000)
+type_vectorizer = CountVectorizer(max_features=500)
 type_matrix = type_vectorizer.fit_transform(type_lines)
 type_array = type_matrix.toarray()
 
@@ -76,14 +77,19 @@ k = 25
 knn = KNeighborsClassifier(n_neighbors=k)
 knn.fit(X, id_index)
 
+# Save the model
+dump(knn, 'knn_model.joblib')
+
+# test #
+
 def find_nearest_neighbors(record_id, id_index, knn_model, X):
     record_idx = id_index.index(record_id)
     distances, indices = knn_model.kneighbors(X[record_idx].reshape(1, -1))
     neighbors = [id_index[i] for i in indices[0]]
-    similarity_scores = [1 / (1 + d) for d in distances[0]]  # Transform distances to similarity scores
+    similarity_scores = [round(1 + 99 * (1 / (1 + d))) for d in distances[0]]
     return neighbors, similarity_scores
 
-record_id = '27740ea5-79c8-420f-bc49-6d5eac58dac5'  # Replace with an actual id from your data
+record_id = 'a575a9af-e1de-4a1d-91d8-440585377e4f'  # Replace with an actual id from your data
 nearest_neighbor_ids, similarity_scores = find_nearest_neighbors(record_id, id_index, knn, X)
 
 id_to_name = {record.get('id', ''): record.get('name', '') for record in unique_data}

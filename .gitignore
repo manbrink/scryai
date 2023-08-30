@@ -11,6 +11,7 @@ Lib/
 Scripts/
 data.json
 processed_data.csv
+knn_model.joblib
 
 .Python
 build/
