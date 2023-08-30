@@ -16,6 +16,8 @@ for col in ['W', 'U', 'B', 'R', 'G']:
 names = []
 oracle_texts = []  # List to store oracle_text
 type_lines = []  # List to store type_line
+sets = []  # List to store sets
+flavor_texts = []  # List to store flavor_texts
 
 all_keywords = set()
 processed_names = set()
@@ -29,6 +31,8 @@ for record in data:
     names.append(name)
     oracle_texts.append(record.get('oracle_text', ''))  # Collect oracle_text
     type_lines.append(record.get('type_line', ''))  # Collect type_line
+    sets.append(record.get('set', ''))
+    flavor_texts.append(record.get('flavor_text', ''))
 
     unique_data.append(record)
 
@@ -70,12 +74,41 @@ type_vectorizer = CountVectorizer(max_features=500)
 type_matrix = type_vectorizer.fit_transform(type_lines)
 type_array = type_matrix.toarray()
 
-X = np.hstack([df_filtered.drop('id', axis=1).values, name_array, oracle_array, type_array])
+# Vectorize set
+set_vectorizer = CountVectorizer(max_features=1000)
+set_matrix = set_vectorizer.fit_transform(sets)
+set_array = set_matrix.toarray()
+
+# Vectorize flavor_text
+flavor_text_vectorizer = CountVectorizer(max_features=1500)
+flavor_text_matrix = flavor_text_vectorizer.fit_transform(flavor_texts)
+flavor_text_array = flavor_text_matrix.toarray()
+
+X = np.hstack([
+    df_filtered.drop('id', axis=1).values, 
+    name_array, 
+    oracle_array, 
+    type_array, 
+    set_array,
+    flavor_text_array
+])
 id_index = df_filtered['id'].tolist()
 
 k = 25
 knn = KNeighborsClassifier(n_neighbors=k)
 knn.fit(X, id_index)
+
+# Create an id_to_name mapping
+id_to_name = {record.get('id', ''): record.get('name', '') for record in unique_data}
+
+# Save the id_to_name mapping
+with open('id_to_name.json', 'w') as f:
+    json.dump(id_to_name, f)
+
+# Save the feature matrix X and id_index
+np.save('feature_matrix.npy', X)
+with open('id_index.json', 'w') as f:
+    json.dump(id_index, f)
 
 # Save the model
 dump(knn, 'knn_model.joblib')
@@ -91,8 +124,6 @@ def find_nearest_neighbors(record_id, id_index, knn_model, X):
 
 record_id = 'a575a9af-e1de-4a1d-91d8-440585377e4f'  # Replace with an actual id from your data
 nearest_neighbor_ids, similarity_scores = find_nearest_neighbors(record_id, id_index, knn, X)
-
-id_to_name = {record.get('id', ''): record.get('name', '') for record in unique_data}
 
 nearest_neighbor_names = [id_to_name.get(n_id, '') for n_id in nearest_neighbor_ids]
 

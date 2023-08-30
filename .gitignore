@@ -12,6 +12,9 @@ Scripts/
 data.json
 processed_data.csv
 knn_model.joblib
+id_index.json
+id_to_name.json
+feature_matrix.npy
 
 .Python
 build/
