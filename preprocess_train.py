@@ -60,12 +60,12 @@ for i, record in enumerate(unique_data):
 
 df_filtered = pd.DataFrame(data_dict)
 
-vectorizer = CountVectorizer(max_features=1500)
+vectorizer = CountVectorizer(max_features=3000)
 name_matrix = vectorizer.fit_transform(names)
 name_array = name_matrix.toarray()
 
 # Vectorize oracle_text
-oracle_vectorizer = CountVectorizer(max_features=1500)
+oracle_vectorizer = CountVectorizer(max_features=3000)
 oracle_matrix = oracle_vectorizer.fit_transform(oracle_texts)
 oracle_array = oracle_matrix.toarray()
 
@@ -122,13 +122,13 @@ def find_nearest_neighbors(record_id, id_index, knn_model, X):
     similarity_scores = [round(1 + 99 * (1 / (1 + d))) for d in distances[0]]
     return neighbors, similarity_scores
 
-record_id = 'a575a9af-e1de-4a1d-91d8-440585377e4f'  # Replace with an actual id from your data
-nearest_neighbor_ids, similarity_scores = find_nearest_neighbors(record_id, id_index, knn, X)
+# record_id = 'a575a9af-e1de-4a1d-91d8-440585377e4f'  # Replace with an actual id from your data
+# nearest_neighbor_ids, similarity_scores = find_nearest_neighbors(record_id, id_index, knn, X)
 
-nearest_neighbor_names_and_images = [id_to_name_and_image.get(n_id, {'name': '', 'image_uri': ''}) for n_id in nearest_neighbor_ids]
+# nearest_neighbor_names_and_images = [id_to_name_and_image.get(n_id, {'name': '', 'image_uri': ''}) for n_id in nearest_neighbor_ids]
 
-print(f"Nearest neighbors to ID {record_id} are:")
-for n_id, n_dict, score in zip(nearest_neighbor_ids, nearest_neighbor_names_and_images, similarity_scores):
-    print(f"Name: {n_dict['name']}, Image URI: {n_dict['image_uri']}, Similarity Score: {score}")
+# print(f"Nearest neighbors to ID {record_id} are:")
+# for n_id, n_dict, score in zip(nearest_neighbor_ids, nearest_neighbor_names_and_images, similarity_scores):
+#     print(f"Name: {n_dict['name']}, Image URI: {n_dict['image_uri']}, Similarity Score: {score}")
 
 
