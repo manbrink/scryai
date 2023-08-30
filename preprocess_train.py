@@ -13,6 +13,8 @@ for col in ['W', 'U', 'B', 'R', 'G']:
     data_dict[col] = []
 
 names = []
+oracle_texts = []  # List to store oracle_text
+type_lines = []  # List to store type_line
 
 all_keywords = set()
 processed_names = set()
@@ -24,9 +26,11 @@ for record in data:
         continue
     processed_names.add(name)
     names.append(name)
-    
-    unique_data.append(record)  # Only add unique records to this list
-    
+    oracle_texts.append(record.get('oracle_text', ''))  # Collect oracle_text
+    type_lines.append(record.get('type_line', ''))  # Collect type_line
+
+    unique_data.append(record)
+
     data_dict['id'].append(record.get('id', ''))
     data_dict['cmc'].append(record.get('cmc', 0))
     for col in ['W', 'U', 'B', 'R', 'G']:
@@ -43,7 +47,6 @@ for record in data:
 for keyword in all_keywords:
     data_dict[keyword] = [0] * len(data_dict['id'])
 
-# Use unique_data instead of data for this loop
 for i, record in enumerate(unique_data):
     keywords = record.get('keywords', [])
     for keyword in keywords:
@@ -56,7 +59,17 @@ vectorizer = CountVectorizer(max_features=1000)
 name_matrix = vectorizer.fit_transform(names)
 name_array = name_matrix.toarray()
 
-X = np.hstack([df_filtered.drop('id', axis=1).values, name_array])
+# Vectorize oracle_text
+oracle_vectorizer = CountVectorizer(max_features=1000)
+oracle_matrix = oracle_vectorizer.fit_transform(oracle_texts)
+oracle_array = oracle_matrix.toarray()
+
+# Apply CountVectorizer to type_lines
+type_vectorizer = CountVectorizer(max_features=1000)
+type_matrix = type_vectorizer.fit_transform(type_lines)
+type_array = type_matrix.toarray()
+
+X = np.hstack([df_filtered.drop('id', axis=1).values, name_array, oracle_array, type_array])
 id_index = df_filtered['id'].tolist()
 
 k = 25
@@ -67,13 +80,17 @@ def find_nearest_neighbors(record_id, id_index, knn_model, X):
     record_idx = id_index.index(record_id)
     distances, indices = knn_model.kneighbors(X[record_idx].reshape(1, -1))
     neighbors = [id_index[i] for i in indices[0]]
-    return neighbors
+    similarity_scores = [1 / (1 + d) for d in distances[0]]  # Transform distances to similarity scores
+    return neighbors, similarity_scores
 
-record_id = '230281e4-1cee-4cf8-a73c-63a21c5eb60b'
-nearest_neighbor_ids = find_nearest_neighbors(record_id, id_index, knn, X)
+record_id = '27740ea5-79c8-420f-bc49-6d5eac58dac5'  # Replace with an actual id from your data
+nearest_neighbor_ids, similarity_scores = find_nearest_neighbors(record_id, id_index, knn, X)
+
 id_to_name = {record.get('id', ''): record.get('name', '') for record in unique_data}
+
 nearest_neighbor_names = [id_to_name.get(n_id, '') for n_id in nearest_neighbor_ids]
 
 print(f"Nearest neighbors to ID {record_id} are:")
-for n_id, n_name in zip(nearest_neighbor_ids, nearest_neighbor_names):
-    print(f"ID: {n_id}, Name: {n_name}")
+for n_id, n_name, score in zip(nearest_neighbor_ids, nearest_neighbor_names, similarity_scores):
+    print(f"Name: {n_name}, Similarity Score: {score}")
+
