@@ -98,12 +98,12 @@ k = 25
 knn = KNeighborsClassifier(n_neighbors=k)
 knn.fit(X, id_index)
 
-# Create an id_to_name mapping
-id_to_name = {record.get('id', ''): record.get('name', '') for record in unique_data}
+# Create an id_to_name_and_image mapping
+id_to_name_and_image = {record.get('id', ''): {'name': record.get('name', ''), 'image_uri': record.get('image_uris', {}).get('border_crop', '')} for record in unique_data}
 
-# Save the id_to_name mapping
-with open('id_to_name.json', 'w') as f:
-    json.dump(id_to_name, f)
+# Save the id_to_name_and_image mapping
+with open('id_to_name_and_image.json', 'w') as f:
+    json.dump(id_to_name_and_image, f)
 
 # Save the feature matrix X and id_index
 np.save('feature_matrix.npy', X)
@@ -125,9 +125,10 @@ def find_nearest_neighbors(record_id, id_index, knn_model, X):
 record_id = 'a575a9af-e1de-4a1d-91d8-440585377e4f'  # Replace with an actual id from your data
 nearest_neighbor_ids, similarity_scores = find_nearest_neighbors(record_id, id_index, knn, X)
 
-nearest_neighbor_names = [id_to_name.get(n_id, '') for n_id in nearest_neighbor_ids]
+nearest_neighbor_names_and_images = [id_to_name_and_image.get(n_id, {'name': '', 'image_uri': ''}) for n_id in nearest_neighbor_ids]
 
 print(f"Nearest neighbors to ID {record_id} are:")
-for n_id, n_name, score in zip(nearest_neighbor_ids, nearest_neighbor_names, similarity_scores):
-    print(f"Name: {n_name}, Similarity Score: {score}")
+for n_id, n_dict, score in zip(nearest_neighbor_ids, nearest_neighbor_names_and_images, similarity_scores):
+    print(f"Name: {n_dict['name']}, Image URI: {n_dict['image_uri']}, Similarity Score: {score}")
+
 

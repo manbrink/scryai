@@ -1,6 +1,5 @@
 import numpy as np
 import json
-from sklearn.neighbors import KNeighborsClassifier
 from joblib import load
 
 def classify(record_id):
@@ -12,9 +11,9 @@ def classify(record_id):
   # Load the saved KNN model
   knn = load('knn_model.joblib')
 
-  # Load the id_to_name mapping (assuming you saved it as a JSON)
-  with open('id_to_name.json', 'r') as f:
-      id_to_name = json.load(f)
+  # Load the id_to_name_and_image mapping
+  with open('id_to_name_and_image.json', 'r') as f:
+    id_to_name_and_image = json.load(f)
 
   # Example record_id to find nearest neighbors for
   # record_id = '5bb3cb5c-8d66-4f5e-a9a9-917e6045f024'  # Replace this with an actual ID from your data
@@ -22,17 +21,18 @@ def classify(record_id):
   # Find the nearest neighbors and similarity scores
   nearest_neighbor_ids, similarity_scores = find_nearest_neighbors(record_id, id_index, knn, X)
 
-  # Retrieve the names of the nearest neighbors
-  nearest_neighbor_names = [id_to_name.get(n_id, '') for n_id in nearest_neighbor_ids]
+  # Retrieve the names and image_uris of the nearest neighbors
+  nearest_neighbor_names_and_images = [id_to_name_and_image.get(n_id, {'name': '', 'image_uri': ''}) for n_id in nearest_neighbor_ids]
 
   # Create a list of dictionaries for the result
   result = []
-  for n_id, n_name, score in zip(nearest_neighbor_ids, nearest_neighbor_names, similarity_scores):
-      result.append({
-          'id': n_id,
-          'name': n_name,
-          'similarity_score': score
-      })
+  for n_id, n_dict, score in zip(nearest_neighbor_ids, nearest_neighbor_names_and_images, similarity_scores):
+    result.append({
+        'id': n_id,
+        'name': n_dict['name'],
+        'image_uri': n_dict['image_uri'],
+        'similarity_score': score
+    })
 
   # Return the list of dictionaries as a JSON-serializable string
   return json.dumps(result)
