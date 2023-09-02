@@ -13,8 +13,8 @@ data.json
 processed_data.csv
 knn_model.joblib
 id_index.json
-id_to_name.json
 feature_matrix.npy
+id_to_name_and_image.json
 
 .Python
 build/
@@ -129,7 +129,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+.env.local
 .venv
 env/
 venv/

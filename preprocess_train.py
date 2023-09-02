@@ -28,6 +28,7 @@ for record in data:
     if name in processed_names:
         continue
     processed_names.add(name)
+    
     names.append(name)
     oracle_texts.append(record.get('oracle_text', ''))  # Collect oracle_text
     type_lines.append(record.get('type_line', ''))  # Collect type_line
@@ -94,7 +95,7 @@ X = np.hstack([
 ])
 id_index = df_filtered['id'].tolist()
 
-k = 25
+k = 30
 knn = KNeighborsClassifier(n_neighbors=k)
 knn.fit(X, id_index)
 
@@ -112,23 +113,3 @@ with open('id_index.json', 'w') as f:
 
 # Save the model
 dump(knn, 'knn_model.joblib')
-
-# test #
-
-def find_nearest_neighbors(record_id, id_index, knn_model, X):
-    record_idx = id_index.index(record_id)
-    distances, indices = knn_model.kneighbors(X[record_idx].reshape(1, -1))
-    neighbors = [id_index[i] for i in indices[0]]
-    similarity_scores = [round(1 + 99 * (1 / (1 + d))) for d in distances[0]]
-    return neighbors, similarity_scores
-
-# record_id = 'a575a9af-e1de-4a1d-91d8-440585377e4f'  # Replace with an actual id from your data
-# nearest_neighbor_ids, similarity_scores = find_nearest_neighbors(record_id, id_index, knn, X)
-
-# nearest_neighbor_names_and_images = [id_to_name_and_image.get(n_id, {'name': '', 'image_uri': ''}) for n_id in nearest_neighbor_ids]
-
-# print(f"Nearest neighbors to ID {record_id} are:")
-# for n_id, n_dict, score in zip(nearest_neighbor_ids, nearest_neighbor_names_and_images, similarity_scores):
-#     print(f"Name: {n_dict['name']}, Image URI: {n_dict['image_uri']}, Similarity Score: {score}")
-
-

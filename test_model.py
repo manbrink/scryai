@@ -5,6 +5,7 @@ from joblib import load
 def classify(record_id):
   # Load the saved feature matrix and id_index
   X = np.load('feature_matrix.npy')
+
   with open('id_index.json', 'r') as f:
       id_index = json.load(f)
 
@@ -14,9 +15,6 @@ def classify(record_id):
   # Load the id_to_name_and_image mapping
   with open('id_to_name_and_image.json', 'r') as f:
     id_to_name_and_image = json.load(f)
-
-  # Example record_id to find nearest neighbors for
-  # record_id = '5bb3cb5c-8d66-4f5e-a9a9-917e6045f024'  # Replace this with an actual ID from your data
 
   # Find the nearest neighbors and similarity scores
   nearest_neighbor_ids, similarity_scores = find_nearest_neighbors(record_id, id_index, knn, X)
