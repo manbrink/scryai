@@ -51,27 +51,16 @@ def find_nearest_neighbors(record_idx, knn_model, X, connection):
     distances, indices = knn_model.kneighbors(X[record_idx].reshape(1, -1))
 
     indices_str = ','.join([str(i) for i in indices[0]])
-
-    # print(indices_str)
-    # print(len(indices[0]))
     
     id_index_query = f"SELECT scryfall_id FROM id_index WHERE array_index = ANY(ARRAY[{indices_str}])"
-
-    # print(id_index_query)
     
     fetched_data = fetch_from_db(id_index_query, connection)
     if fetched_data is None:
         print("Error fetching data.")
         return [], []
     
-    # print(len(fetched_data))
-    
     id_index = [rec[0] for rec in fetched_data]
 
-    # print(id_index)
-    # print(len(id_index))
-
-    # neighbors = [id_index[i] for i in indices[0]]
     neighbors = id_index
     similarity_scores = [round(100 / (1 + d)) for d in distances[0]]
     
