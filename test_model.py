@@ -18,7 +18,8 @@ def fetch_from_db(query, connection):
         return None
 
 def classify(record_id, connection):
-    X = np.load('feature_matrix.npy')
+    with np.load('feature_matrix_compressed.npz') as data:
+        X = data['X']
     knn = load('knn_model.joblib')
 
     id_index_query = f"SELECT array_index FROM id_index WHERE scryfall_id='{record_id}' LIMIT 1"

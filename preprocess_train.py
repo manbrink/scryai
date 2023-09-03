@@ -140,25 +140,25 @@ def preprocess_data(data):
 def train_model(data_dict, names, oracle_texts, type_lines, sets, flavor_texts):
     feature_df = pd.DataFrame(data_dict)
 
-    vectorizer = CountVectorizer(max_features=3000)
+    vectorizer = CountVectorizer(max_features=1000)
     name_matrix = vectorizer.fit_transform(names)
     name_array = name_matrix.toarray()
     del name_matrix
     del vectorizer
 
-    oracle_vectorizer = CountVectorizer(max_features=3000)
+    oracle_vectorizer = CountVectorizer(max_features=1000)
     oracle_matrix = oracle_vectorizer.fit_transform(oracle_texts)
     oracle_array = oracle_matrix.toarray()
     del oracle_matrix
     del oracle_vectorizer
 
-    type_vectorizer = CountVectorizer(max_features=500)
+    type_vectorizer = CountVectorizer(max_features=30)
     type_matrix = type_vectorizer.fit_transform(type_lines)
     type_array = type_matrix.toarray()
     del type_matrix
     del type_vectorizer
 
-    set_vectorizer = CountVectorizer(max_features=1000)
+    set_vectorizer = CountVectorizer(max_features=500)
     set_matrix = set_vectorizer.fit_transform(sets)
     set_array = set_matrix.toarray()
     del set_matrix
@@ -184,8 +184,8 @@ def train_model(data_dict, names, oracle_texts, type_lines, sets, flavor_texts):
     knn = KNeighborsClassifier(n_neighbors=k)
     knn.fit(X, id_index)
 
-    np.save('feature_matrix.npy', X)
-    dump(knn, 'knn_model.joblib')
+    np.savez_compressed('feature_matrix_compressed.npz', X=X)
+    dump(knn, 'knn_model.joblib', compress=3)
 
     return id_index
 
@@ -211,8 +211,8 @@ if __name__ == '__main__':
 
         id_index = train_model(data_dict, names, oracle_texts, type_lines, sets, flavor_texts)
 
-        upsert_data_to_db(connection, unique_data)
-        upsert_id_index_to_db(connection, id_index)
+        # upsert_data_to_db(connection, unique_data)
+        # upsert_id_index_to_db(connection, id_index)
         connection.close()
     else:
         print('Connection failed.')
