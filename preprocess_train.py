@@ -83,22 +83,27 @@ def upsert_id_index_to_db(connection, id_index):
     cursor.close()
 
 def preprocess_data(data):
-    data_dict = {'id': [], 'cmc': []}
-    for col in ['W', 'U', 'B', 'R', 'G']:
-        data_dict[col] = []
+    data_dict = {'id': []}
 
     names = []
     oracle_texts = []
+    keywords = []
     type_lines = []
     sets = []
     flavor_texts = []
     border_crop_urls = []
 
-    all_keywords = set()
     processed_names = set()
     unique_data = []
 
     for record in data:
+        if record.get('reprint', True):
+            continue
+
+        border_crop = record.get('image_uris', {}).get('border_crop', '')
+        if not border_crop:
+            continue
+
         name = record.get('name', '')
         if name in processed_names:
             continue
@@ -106,38 +111,19 @@ def preprocess_data(data):
         
         names.append(name)
         oracle_texts.append(record.get('oracle_text', ''))
+        keywords.append(" ".join(record.get('keywords', [])))
         type_lines.append(record.get('type_line', ''))
         sets.append(record.get('set', ''))
         flavor_texts.append(record.get('flavor_text', ''))
-        border_crop_urls.append(record.get('image_uris', {}).get('border_crop', ''))
+        border_crop_urls.append(border_crop)
 
         unique_data.append(record)
 
         data_dict['id'].append(record.get('id', ''))
-        data_dict['cmc'].append(record.get('cmc', 0))
-        for col in ['W', 'U', 'B', 'R', 'G']:
-            data_dict[col].append(0)
 
-        colors = record.get('colors', [])
-        for col in colors:
-            if col in ['W', 'U', 'B', 'R', 'G']:
-                data_dict[col][-1] = 1
+    return unique_data, data_dict, names, oracle_texts, type_lines, keywords
 
-        keywords = record.get('keywords', [])
-        all_keywords.update(keywords)
-
-    for keyword in all_keywords:
-        data_dict[keyword] = [0] * len(data_dict['id'])
-
-    for i, record in enumerate(unique_data):
-        keywords = record.get('keywords', [])
-        for keyword in keywords:
-            if keyword in all_keywords:
-                data_dict[keyword][i] = 1
-
-    return unique_data, data_dict, names, oracle_texts, type_lines, sets, flavor_texts
-
-def train_model(data_dict, names, oracle_texts, type_lines, sets, flavor_texts):
+def train_model(data_dict, names, oracle_texts, type_lines, keywords):
     feature_df = pd.DataFrame(data_dict)
 
     vectorizer = CountVectorizer(max_features=1000)
@@ -152,31 +138,24 @@ def train_model(data_dict, names, oracle_texts, type_lines, sets, flavor_texts):
     del oracle_matrix
     del oracle_vectorizer
 
+    keyword_vectorizer = CountVectorizer(max_features=1000)
+    keyword_matrix = keyword_vectorizer.fit_transform(keywords)
+    keyword_array = keyword_matrix.toarray()
+    del keyword_matrix
+    del keyword_vectorizer
+
     type_vectorizer = CountVectorizer(max_features=30)
     type_matrix = type_vectorizer.fit_transform(type_lines)
     type_array = type_matrix.toarray()
     del type_matrix
     del type_vectorizer
 
-    set_vectorizer = CountVectorizer(max_features=500)
-    set_matrix = set_vectorizer.fit_transform(sets)
-    set_array = set_matrix.toarray()
-    del set_matrix
-    del set_vectorizer
-
-    flavor_text_vectorizer = CountVectorizer(max_features=1500)
-    flavor_text_matrix = flavor_text_vectorizer.fit_transform(flavor_texts)
-    flavor_text_array = flavor_text_matrix.toarray()
-    del flavor_text_matrix
-    del flavor_text_vectorizer
-
     X = np.hstack([
         feature_df.drop('id', axis=1).values, 
         name_array, 
-        oracle_array, 
-        type_array, 
-        set_array,
-        flavor_text_array
+        oracle_array,
+        keyword_array,
+        type_array
     ])
     id_index = feature_df['id'].tolist()
 
@@ -207,9 +186,9 @@ if __name__ == '__main__':
         with open('data.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
 
-        unique_data, data_dict, names, oracle_texts, type_lines, sets, flavor_texts = preprocess_data(data)
+        unique_data, data_dict, names, oracle_texts, type_lines, keywords = preprocess_data(data)
 
-        id_index = train_model(data_dict, names, oracle_texts, type_lines, sets, flavor_texts)
+        id_index = train_model(data_dict, names, oracle_texts, type_lines, keywords)
 
         # upsert_data_to_db(connection, unique_data)
         # upsert_id_index_to_db(connection, id_index)

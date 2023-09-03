@@ -37,7 +37,7 @@ def classify(record_id, connection):
     result = []
     for n_id, score in zip(nearest_neighbor_ids, similarity_scores):
         for rec in fetched_data:
-            if rec[0] == n_id:
+            if rec[0] == n_id and rec[0] != record_id:
                 result.append({
                     'id': n_id,
                     'name': rec[1],
