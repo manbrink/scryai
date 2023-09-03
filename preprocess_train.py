@@ -52,17 +52,19 @@ def upsert_data_to_db(connection, unique_data):
         
         psycopg2.extras.execute_values(cursor, query, values)
         connection.commit()
-        print(f'Inserted {i + batch_size} records.')
+        print(f'Upserted {i + batch_size} records.')
 
-    print('Finished inserting records.')
+    print('Finished upserting records.')
     cursor.close()
 
 def upsert_id_index_to_db(connection, id_index):
     cursor = connection.cursor()
     batch_size = 1000
 
-    for i in range(0, len(id_index), batch_size):
-        batch = id_index[i:i + batch_size]
+    enumerated_id_index = list(enumerate(id_index))
+
+    for i in range(0, len(enumerated_id_index), batch_size):
+        batch = enumerated_id_index[i:i + batch_size]
 
         query = '''
             INSERT INTO id_index (scryfall_id, array_index)
@@ -71,12 +73,13 @@ def upsert_id_index_to_db(connection, id_index):
             SET array_index = EXCLUDED.array_index;
         '''
         
-        values = [(scryfall_id, array_index) for array_index, scryfall_id in enumerate(batch)]
-        
+        values = [(scryfall_id, array_index) for array_index, scryfall_id in batch]
+
         psycopg2.extras.execute_values(cursor, query, values)
+        print(f'Upserted {i + batch_size} id index records.')
 
     connection.commit()
-    print('Finished inserting id index.')
+    print('Finished upserting id index.')
     cursor.close()
 
 def preprocess_data(data):
