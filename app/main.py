@@ -1,7 +1,9 @@
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from test_model import run
+from .test_model import run
 
 import psycopg2
 from dotenv import load_dotenv
@@ -36,7 +38,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-load_dotenv('.env.local')
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
+
+load_dotenv(os.path.join(BASEDIR, '.env.local'))
 
 class Settings(BaseSettings):
     db_host: str = ""
