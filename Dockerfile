@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8000
 
 # Command to run the application using Uvicorn
-CMD uvicorn app.main:app --host $UVICORN_HOST --port $UVICORN_PORT
+CMD uvicorn app.main:app --host $UVICORN_HOST --port $UVICORN_PORT --log-level $LOG_LEVEL

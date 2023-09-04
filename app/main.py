@@ -26,7 +26,6 @@ settings = Settings()
 
 def connect_to_db(retries=5):
     print("Connecting to PostgreSQL...")
-    print(psycopg2.__version__)
 
     for _ in range(retries):
         try:
@@ -66,6 +65,7 @@ async def startup_event():
     print("Starting up...")
     global connection
     connection = connect_to_db()
+    print("Startup complete.")
 
 @app.get("/cards/{card_id}")
 async def read_card(card_id):
