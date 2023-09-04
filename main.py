@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .test_model import run
+from test_model import run
 
 import psycopg2
 from dotenv import load_dotenv
