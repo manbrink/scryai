@@ -163,8 +163,8 @@ def train_model(data_dict, names, oracle_texts, type_lines, keywords):
     knn = KNeighborsClassifier(n_neighbors=k)
     knn.fit(X, id_index)
 
-    np.savez_compressed('feature_matrix_compressed.npz', X=X)
-    dump(knn, 'knn_model.joblib', compress=3)
+    np.savez_compressed('../feature_matrix_compressed.npz', X=X)
+    dump(knn, '../knn_model.joblib', compress=3)
 
     return id_index
 
