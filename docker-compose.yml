@@ -1,0 +1,9 @@
+version: '3.1'
+
+services:
+  my_fastapi_app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.local

@@ -9,18 +9,39 @@ import psycopg2
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-def connect_to_db(settings):
-  try:
-    connection = psycopg2.connect(
-        host=settings.db_host,
-        port=settings.db_port,
-        dbname=settings.db_name,
-        user=settings.db_user,
-        password=settings.db_password
-    )
-    return connection
-  except Exception as error:
-    print(f"Error while connecting to PostgreSQL: {error}")
+from time import sleep
+
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
+
+load_dotenv(os.path.join(BASEDIR, '.env.local'))
+
+class Settings(BaseSettings):
+    db_host: str = ""
+    db_port: int = 5432
+    db_name: str = ""
+    db_user: str = ""
+    db_password: str = ""
+
+settings = Settings()
+
+def connect_to_db(retries=5):
+    print("Connecting to PostgreSQL...")
+    print(psycopg2.__version__)
+
+    for _ in range(retries):
+        try:
+            connection = psycopg2.connect(
+                host=settings.db_host,
+                port=settings.db_port,
+                dbname=settings.db_name,
+                user=settings.db_user,
+                password=settings.db_password
+            )
+            print("Connected to PostgreSQL.")
+            return connection
+        except Exception as error:
+            print(f"Error while connecting to PostgreSQL: {error}")
+            sleep(3)
     return None
 
 app = FastAPI()
@@ -38,24 +59,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
+print("main.py body...")
 
-load_dotenv(os.path.join(BASEDIR, '.env.local'))
-
-class Settings(BaseSettings):
-    db_host: str = ""
-    db_port: int = 5432
-    db_name: str = ""
-    db_user: str = ""
-    db_password: str = ""
-
-settings = Settings()
-
-connection = connect_to_db(settings)
+@app.on_event("startup")
+async def startup_event():
+    print("Starting up...")
+    global connection
+    connection = connect_to_db()
 
 @app.get("/cards/{card_id}")
 async def read_card(card_id):
     try:
+        print(f"Received request for card {card_id}")
         results = run(card_id, connection)
         return results
     except Exception as e:

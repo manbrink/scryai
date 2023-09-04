@@ -16,9 +16,5 @@ COPY . .
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
 
-# Set environment variables
-ENV UVICORN_HOST=0.0.0.0
-ENV UVICORN_PORT=8000
-
 # Command to run the application using Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD uvicorn app.main:app --host $UVICORN_HOST --port $UVICORN_PORT
