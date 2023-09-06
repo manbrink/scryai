@@ -1,20 +1,9 @@
-# Use the official Python image from Docker Hub
-FROM python:3.11-slim
+FROM public.ecr.aws/lambda/python:3.11
 
-# Set the working directory inside the container
-WORKDIR /app
+COPY requirements.txt ${LAMBDA_TASK_ROOT}
 
-# First, copy only the requirements.txt to leverage Docker cache
-COPY requirements.txt .
+COPY . ${LAMBDA_TASK_ROOT}
 
-# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the current directory contents into the container at /app
-COPY . .
-
-# Make port 8000 available to the world outside this container
-EXPOSE 8000
-
-# Command to run the application using Uvicorn
-CMD uvicorn main:app --host $UVICORN_HOST --port $UVICORN_PORT --log-level $LOG_LEVEL
+CMD ["main.handler"]
