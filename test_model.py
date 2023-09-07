@@ -1,5 +1,5 @@
-import numpy as np
 import json
+from scipy.sparse import load_npz
 from joblib import load
 
 def run(record_id, connection):
@@ -18,8 +18,7 @@ def fetch_from_db(query, connection):
         return None
 
 def classify(record_id, connection):
-    with np.load('feature_matrix_compressed.npz') as data:
-        X = data['X']
+    X = load_npz('feature_matrix_compressed.npz')
     knn = load('knn_model.joblib')
 
     id_index_query = f"SELECT array_index FROM id_index WHERE scryfall_id='{record_id}' LIMIT 1"
@@ -91,4 +90,4 @@ if __name__ == '__main__':
         password=settings.db_password
     )
 
-    print(run("000a5154-90ba-459e-b122-d6893dfdb56f", connection))
+    print(run("0000579f-7b35-4ed3-b44c-db2a538066fe", connection))

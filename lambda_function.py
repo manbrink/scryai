@@ -25,18 +25,15 @@ def connect_to_db(retries=5):
 
 def lambda_handler(event, context):
     try:
-        print("Received request for card")
-
-        # connection = connect_to_db()
+        connection = connect_to_db()
         
         print(event)
-        print(context)
 
-        # card_id = event['pathParameters']['card_id']
-        # print(card_id)
+        card_id = event['card_id']
+        print(card_id)
 
-        # results = run(card_id, connection)
+        results = run(card_id, connection)
 
-        # return results
+        return results
     except Exception as e:
         print(f"An error occurred: {e}")

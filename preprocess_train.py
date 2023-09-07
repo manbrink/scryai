@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import numpy as np
+from scipy.sparse import hstack, save_npz
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import KNeighborsClassifier
 from joblib import dump
@@ -128,42 +129,34 @@ def train_model(data_dict, names, oracle_texts, type_lines, keywords):
 
     vectorizer = CountVectorizer(max_features=3000)
     name_matrix = vectorizer.fit_transform(names)
-    name_array = name_matrix.toarray()
-    del name_matrix
     del vectorizer
 
     oracle_vectorizer = CountVectorizer(max_features=3000)
     oracle_matrix = oracle_vectorizer.fit_transform(oracle_texts)
-    oracle_array = oracle_matrix.toarray()
-    del oracle_matrix
     del oracle_vectorizer
 
     keyword_vectorizer = CountVectorizer(max_features=1000)
     keyword_matrix = keyword_vectorizer.fit_transform(keywords)
-    keyword_array = keyword_matrix.toarray()
-    del keyword_matrix
     del keyword_vectorizer
 
     type_vectorizer = CountVectorizer(max_features=30)
     type_matrix = type_vectorizer.fit_transform(type_lines)
-    type_array = type_matrix.toarray()
-    del type_matrix
     del type_vectorizer
 
-    X = np.hstack([
+    X = hstack([
         feature_df.drop('id', axis=1).values, 
-        name_array, 
-        oracle_array,
-        keyword_array,
-        type_array
-    ])
+        name_matrix,
+        oracle_matrix,
+        keyword_matrix,
+        type_matrix
+    ], format='csr')
     id_index = feature_df['id'].tolist()
 
     k = 30
     knn = KNeighborsClassifier(n_neighbors=k)
     knn.fit(X, id_index)
 
-    np.savez_compressed('../feature_matrix_compressed.npz', X=X)
+    save_npz('../feature_matrix_compressed.npz', X)
     dump(knn, '../knn_model.joblib', compress=3)
 
     return id_index
@@ -192,6 +185,7 @@ if __name__ == '__main__':
 
         # upsert_data_to_db(connection, unique_data)
         # upsert_id_index_to_db(connection, id_index)
+
         connection.close()
     else:
         print('Connection failed.')
