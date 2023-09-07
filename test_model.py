@@ -19,7 +19,10 @@ def fetch_from_db(query, connection):
 
 def classify(record_id, connection):
     X = load_npz('feature_matrix_compressed.npz')
+    # print("Loaded feature matrix.")
+
     knn = load('knn_model.joblib')
+    # print("Loaded KNN model.")
 
     id_index_query = f"SELECT array_index FROM id_index WHERE scryfall_id='{record_id}' LIMIT 1"
     record_idx = fetch_from_db(id_index_query, connection)[0][0]
@@ -45,7 +48,7 @@ def classify(record_id, connection):
                 })
                 break
 
-    return json.dumps(result)
+    return result
 
 def find_nearest_neighbors(record_idx, knn_model, X, connection):
     distances, indices = knn_model.kneighbors(X[record_idx].reshape(1, -1))
@@ -90,4 +93,4 @@ if __name__ == '__main__':
         password=settings.db_password
     )
 
-    print(run("0000579f-7b35-4ed3-b44c-db2a538066fe", connection))
+    run("0000579f-7b35-4ed3-b44c-db2a538066fe", connection)

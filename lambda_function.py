@@ -1,6 +1,7 @@
 import os
 import psycopg2
 from time import sleep
+import json
 
 from test_model import run
 
@@ -27,28 +28,28 @@ def lambda_handler(event, context):
     try:
         connection = connect_to_db()
 
-        card_id = event['card_id']
+        # print("Received event: " + str(event))
+
+        card_id = event['pathParameters']['card_id'] if 'card_id' in event['pathParameters'] else ''
+
+        # print("Card ID: " + card_id)
 
         results = run(card_id, connection)
 
-        response = {
+        return {
             "isBase64Encoded": False,
             "statusCode": 200,
-            "body": results,
             "headers": {
-                "content-type": "application/json"
-            }
+                "Content-Type": "application/json"
+            },
+            "body": json.dumps(results) if results else json.dumps([])
         }
-
-        return response
     except Exception as e:
-        response = {
+        return {
             "isBase64Encoded": False,
-            "statusCode": 500,
-            "body": str(e),
+            "statusCode": 200,
             "headers": {
-                "content-type": "application/json"
-            }
+                "Content-Type": "application/json"
+            },
+            "body": str(e)
         }
-
-        return response
