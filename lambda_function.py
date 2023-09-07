@@ -26,14 +26,29 @@ def connect_to_db(retries=5):
 def lambda_handler(event, context):
     try:
         connection = connect_to_db()
-        
-        print(event)
 
         card_id = event['card_id']
-        print(card_id)
 
         results = run(card_id, connection)
 
-        return results
+        response = {
+            "isBase64Encoded": False,
+            "statusCode": 200,
+            "body": results,
+            "headers": {
+                "content-type": "application/json"
+            }
+        }
+
+        return response
     except Exception as e:
-        print(f"An error occurred: {e}")
+        response = {
+            "isBase64Encoded": False,
+            "statusCode": 500,
+            "body": str(e),
+            "headers": {
+                "content-type": "application/json"
+            }
+        }
+
+        return response
