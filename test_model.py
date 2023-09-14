@@ -93,4 +93,4 @@ if __name__ == '__main__':
         password=settings.db_password
     )
 
-    run("0000579f-7b35-4ed3-b44c-db2a538066fe", connection)
+    print(run("0000579f-7b35-4ed3-b44c-db2a538066fe", connection))

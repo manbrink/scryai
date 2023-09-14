@@ -1,10 +1,10 @@
-import json
 import pandas as pd
-import numpy as np
 from scipy.sparse import hstack, save_npz
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import KNeighborsClassifier
 from joblib import dump
+import gzip
+import json
 
 import psycopg2
 import psycopg2.extras
@@ -176,8 +176,10 @@ if __name__ == '__main__':
     connection = connect_to_db(settings)
 
     if connection:
-        with open('data.json', 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        with gzip.open('data.json.gz', 'rb') as f:
+            content = f.read()
+            content_str = content.decode('utf-8')
+            data = json.loads(content_str)
 
         unique_data, data_dict, names, oracle_texts, type_lines, keywords = preprocess_data(data)
 

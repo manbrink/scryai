@@ -10,13 +10,7 @@ __pycache__/
 Lib/
 Scripts/
 data.json
-processed_data.csv
-knn_model.joblib
-id_index.json
-feature_matrix.npy
-feature_matrix_compressed.npz
 id_to_name_and_image.json
-test.py
 
 .Python
 build/
