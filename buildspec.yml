@@ -4,9 +4,6 @@ env:
   parameter-store:
     LAMBDA_FUNCTION_NAME: "LAMBDA_FUNCTION_NAME"
     ECR_REGISTRY_URI: "ECR_REGISTRY_URI"
-  variables:
-    REPORTS_FOLDER: "pytest_reports"
-    REPORTS_FILENAME: "pytest_report.xml"
 
 phases:
   install:
