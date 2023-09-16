@@ -3,7 +3,7 @@ import psycopg2
 from time import sleep
 import json
 
-from test_model import run
+from classifier import run
 
 def connect_to_db(retries=5):
     print("Connecting to PostgreSQL...")

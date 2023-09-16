@@ -4,14 +4,24 @@ env:
   parameter-store:
     LAMBDA_FUNCTION_NAME: "LAMBDA_FUNCTION_NAME"
     ECR_REGISTRY_URI: "ECR_REGISTRY_URI"
+  variables:
+    REPORTS_FOLDER: "pytest_reports"
+    REPORTS_FILENAME: "pytest_report.xml"
 
 phases:
+  install:
+    runtime-versions:
+      python: 3.7
+    commands:
+      - pip3 install pytest
   pre_build:
     commands:
       - echo Authenticating with Amazon ECR...
       - aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin $ECR_REGISTRY_URI
   build:
     commands:
+      - echo Running tests...
+      - python -m pytest --junitxml=$REPORTS_FOLDER/$REPORTS_FILENAME tests
       - echo Building the Docker image...          
       - docker build -t scryai .
       - docker tag scryai:latest $ECR_REGISTRY_URI/scryai:latest
@@ -21,3 +31,9 @@ phases:
       - docker push $ECR_REGISTRY_URI/scryai:latest
       - echo Updating Lambda image...
       - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $ECR_REGISTRY_URI/scryai:latest
+reports:
+  pytest_reports:
+    files:
+      - $REPORTS_FILENAME
+    base-directory: $REPORTS_FOLDER
+    file-format: JUNITXML
