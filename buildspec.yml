@@ -1,10 +1,5 @@
 version: 0.2
 
-env:
-  parameter-store:
-    LAMBDA_FUNCTION_NAME: "LAMBDA_FUNCTION_NAME"
-    ECR_REGISTRY_URI: "ECR_REGISTRY_URI"
-
 phases:
   install:
     runtime-versions:
