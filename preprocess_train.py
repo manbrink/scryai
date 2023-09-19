@@ -127,11 +127,11 @@ def preprocess_data(data):
 def train_model(data_dict, names, oracle_texts, type_lines, keywords):
     feature_df = pd.DataFrame(data_dict)
 
-    vectorizer = CountVectorizer(max_features=5000)
+    vectorizer = CountVectorizer(max_features=6000)
     name_matrix = vectorizer.fit_transform(names)
     del vectorizer
 
-    oracle_vectorizer = CountVectorizer(max_features=5000)
+    oracle_vectorizer = CountVectorizer(max_features=6000)
     oracle_matrix = oracle_vectorizer.fit_transform(oracle_texts)
     del oracle_vectorizer
 
