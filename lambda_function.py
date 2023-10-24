@@ -1,7 +1,7 @@
+import json
 import os
 import psycopg2
 from time import sleep
-import json
 
 from classifier import run
 
@@ -24,15 +24,11 @@ def connect_to_db(retries=5):
             sleep(3)
     return None
 
+connection = connect_to_db()
+
 def lambda_handler(event, context):
     try:
-        connection = connect_to_db()
-
-        # print("Received event: " + str(event))
-
         card_id = event['pathParameters']['card_id'] if 'card_id' in event['pathParameters'] else ''
-
-        # print("Card ID: " + card_id)
 
         results = run(card_id, connection)
 
